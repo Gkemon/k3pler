@@ -1,30 +1,35 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 28
-    buildToolsVersion "28.0.3"
+    compileSdkVersion 33
     defaultConfig {
         applicationId "com.k3.k3pler"
         minSdkVersion 17
-        targetSdkVersion 28
+        targetSdkVersion 33
         versionCode 4
         versionName "1.3"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
+    //Fixed INSTALL_FAILED_NO_MATCHING_ABIS issue by adding this line
+    configurations {
+        all*.exclude group: 'com.barchart.udt', module: 'barchart-udt-bundle'
+    }
+
     buildTypes {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+    namespace 'com.k3.k3pler'
 }
 
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
-    androidTestImplementation('com.android.support.test.espresso:espresso-core:2.2.2', {
-        exclude group: 'com.android.support', module: 'support-annotations'
-    })
-    implementation 'com.android.support:recyclerview-v7:28.0.0'
     implementation 'org.littleshoot:littleproxy:1.1.2'
-    testImplementation 'junit:junit:4.12'
+    implementation "androidx.recyclerview:recyclerview:1.2.1"
+    implementation 'androidx.viewpager2:viewpager2:1.0.0'
+    implementation "androidx.swiperefreshlayout:swiperefreshlayout:1.1.0"
+    implementation 'androidx.coordinatorlayout:coordinatorlayout:1.2.0'
+    testImplementation 'junit:junit:4.13.2'
 }

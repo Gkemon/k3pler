@@ -4,15 +4,16 @@ package com.k3.k3pler.frag;
 import android.app.Dialog;
 import android.content.Context;
 import android.os.Handler;
-import android.support.v4.view.ViewPager;
-import android.support.v4.widget.SwipeRefreshLayout;
-import android.support.v7.widget.DefaultItemAnimator;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
+
+import androidx.recyclerview.widget.DefaultItemAnimator;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
+import androidx.viewpager.widget.ViewPager;
 
 import com.k3.k3pler.R;
 import com.k3.k3pler.handler.RequestDialog;
@@ -24,10 +25,10 @@ import java.util.ArrayList;
 
 /** Main page **/
 public class MainPageInflater {
-    private Context context;
-    private ViewGroup viewGroup;
+    private final Context context;
+    private final ViewGroup viewGroup;
     private SqliteDBHelper sqliteDBHelper;
-    private ArrayList httpReqs;
+    private final ArrayList httpReqs;
     public interface IMainPage {
         void onRecyclerViewInit(RecyclerView recyclerView);
         void onTextViewInit(TextView textView);
@@ -52,42 +53,24 @@ public class MainPageInflater {
         iMainPage.onRecyclerViewInit(recyclerView);
         iMainPage.onTextViewInit(txvMainPageMsg);
         swpMain = viewGroup.findViewById(R.id.swpMain);
-        swpMain.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
-            @Override
-            public void onRefresh() {
-                new Handler().postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        httpReqs.clear();
-                        recyclerView.setAdapter(null);
-                        txvMainPageMsg.setVisibility(View.VISIBLE);
-                        swpMain.setRefreshing(false);
-                    }
-                }, 800);
-            }
-        });
+        swpMain.setOnRefreshListener(() -> new Handler().postDelayed(() -> {
+            httpReqs.clear();
+            recyclerView.setAdapter(null);
+            txvMainPageMsg.setVisibility(View.VISIBLE);
+            swpMain.setRefreshing(false);
+        }, 800));
     }
-    public void onDetailDialogItemClick(final HTTPReq item, final BlacklistPageInflater blacklistPageInflater,
-                                        final ViewPager viewPager, final int pageID){
-        new RequestDialog(context, item).show(new RequestDialog.IBtnBlackList() {
-            @Override
-            public void onInit(Button btnReqBlackList, final Dialog dialog, final String uri) {
-                btnReqBlackList.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        sqliteDBHelper = new SqliteDBHelper(context,
-                                new SQLiteBL(context).getWritableDatabase(),
-                                SQLiteBL.BLACKLIST_DATA, SQLiteBL.TABLE_NAME);
-                        if(!sqliteDBHelper.getAll().contains(uri)) {
-                            sqliteDBHelper.insert(uri);
-                        }
-                        sqliteDBHelper.close();
-                        dialog.cancel();
-                        blacklistPageInflater.setBlacklistLstView();
-                        /* viewPager.setCurrentItem(pageID); */
-                    }
-                });
+    public void onDetailDialogItemClick(final HTTPReq item, final BlacklistPageInflater blacklistPageInflater){
+        new RequestDialog(context, item).show((btnReqBlackList, dialog, uri) -> btnReqBlackList.setOnClickListener(view -> {
+            sqliteDBHelper = new SqliteDBHelper(context,
+                    new SQLiteBL(context).getWritableDatabase(),
+                    SQLiteBL.BLACKLIST_DATA, SQLiteBL.TABLE_NAME);
+            if(!sqliteDBHelper.getAll().contains(uri)) {
+                sqliteDBHelper.insert(uri);
             }
-        });
+            sqliteDBHelper.close();
+            dialog.cancel();
+            blacklistPageInflater.setBlacklistLstView();
+        }));
     }
 }

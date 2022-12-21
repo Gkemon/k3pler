@@ -1,13 +1,13 @@
 package com.k3.k3pler.handler;
 
 
+import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
-import android.support.v4.app.NotificationCompat;
 
 import com.k3.k3pler.R;
 
@@ -17,7 +17,7 @@ public class NotificationHandler {
     private Class mClass;
     private int ID, btnID1 = 1, btnID2 = 2;
     private NotificationManager notificationManager;
-    private int pendingFlag = PendingIntent.FLAG_UPDATE_CURRENT;
+    private int pendingFlag = PendingIntent.FLAG_MUTABLE;
 
     public NotificationHandler(int ID, Context context, Class mClass){
         this.ID = ID;
@@ -63,16 +63,21 @@ public class NotificationHandler {
                 pendingFlag);
     }
     public void notify(String messageTitle, String messageBody, Boolean isOnGoing) {
-        NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(context, String.valueOf(ID))
-                .setSmallIcon(R.mipmap.k3pler_logo)
-                .addAction(0, context.getString(R.string.proxy_stop), getStopPendingIntent())
-                .setContentTitle(messageTitle)
-                .setContentText(messageBody)
-                .setAutoCancel(false)
-                .setOngoing(isOnGoing)
-                .setContentIntent(getShowPendingIntent());
+        Notification.Builder notificationBuilder = null;
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            notificationBuilder = new Notification.Builder(context, String.valueOf(ID))
+                    .setSmallIcon(R.mipmap.k3pler_logo)
+                    .addAction(0, context.getString(R.string.proxy_stop), getStopPendingIntent())
+                    .setContentTitle(messageTitle)
+                    .setContentText(messageBody)
+                    .setAutoCancel(false)
+                    .setOngoing(isOnGoing)
+                    .setContentIntent(getShowPendingIntent());
+        }
         notificationManager = createNotificationManager();
-        notificationManager.notify(ID, notificationBuilder.build());
+        if (notificationBuilder != null) {
+            notificationManager.notify(ID, notificationBuilder.build());
+        }
     }
 
 }

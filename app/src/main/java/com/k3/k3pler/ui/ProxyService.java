@@ -7,18 +7,17 @@ import android.content.Intent;
 import android.os.Binder;
 import android.os.Handler;
 import android.os.IBinder;
-import android.support.v4.content.ContextCompat;
-import android.support.v4.view.ViewPager;
-import android.support.v7.widget.RecyclerView;
 import android.text.Html;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.Window;
-import android.view.WindowManager;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+
+import androidx.core.content.ContextCompat;
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.viewpager.widget.ViewPager;
 
 import com.k3.k3pler.frag.AboutPageInflater;
 import com.k3.k3pler.frag.BlacklistPageInflater;
@@ -123,42 +122,39 @@ public class ProxyService extends Service {
         viewPager = dialog.findViewById(R.id.viewPager);
         viewPager.setOffscreenPageLimit(5);
         rlMain = dialog.findViewById(R.id.rlMain);
-        layoutPagerAdapter = new LayoutPagerAdapter(getApplicationContext(), new LayoutPagerAdapter.IViewPager() {
-            @Override
-            public void onViewsAdded(ArrayList<ViewGroup> layouts) {
-                try {
-                    mainPageInflater = new MainPageInflater(getApplicationContext(), layouts.get(pageIDs.Main.getID()), httpReqs);
-                    mainPageInflater.init(new MainPageInflater.IMainPage() {
-                        @Override
-                        public void onRecyclerViewInit(RecyclerView recyclerView) {
-                            mRecyclerView = recyclerView;
-                        }
-                        @Override
-                        public void onTextViewInit(TextView textView) {
-                            txvMainPageMsg = textView;
-                        }
-                    });
-                }catch (Exception e){
-                    e.printStackTrace();
-                }
-                try {
-                    blacklistPageInflater = new BlacklistPageInflater(getApplicationContext(), layouts.get(pageIDs.BlackList.getID()));
-                    blacklistPageInflater.init();
-                }catch (Exception e){
-                    e.printStackTrace();
-                }
-                try {
-                    settingsPageInflater = new SettingsPageInflater(getApplicationContext(), layouts.get(pageIDs.Settings.getID()));
-                    settingsPageInflater.init();
-                }catch (Exception e){
-                    e.printStackTrace();
-                }
-                try {
-                    aboutPageInflater = new AboutPageInflater(getApplicationContext(), layouts.get(pageIDs.About.getID()), guiDialog);
-                    aboutPageInflater.init();
-                }catch (Exception e){
-                    e.printStackTrace();
-                }
+        layoutPagerAdapter = new LayoutPagerAdapter(getApplicationContext(), layouts -> {
+            try {
+                mainPageInflater = new MainPageInflater(getApplicationContext(), layouts.get(pageIDs.Main.getID()), httpReqs);
+                mainPageInflater.init(new MainPageInflater.IMainPage() {
+                    @Override
+                    public void onRecyclerViewInit(RecyclerView recyclerView) {
+                        mRecyclerView = recyclerView;
+                    }
+                    @Override
+                    public void onTextViewInit(TextView textView) {
+                        txvMainPageMsg = textView;
+                    }
+                });
+            }catch (Exception e){
+                e.printStackTrace();
+            }
+            try {
+                blacklistPageInflater = new BlacklistPageInflater(getApplicationContext(), layouts.get(pageIDs.BlackList.getID()));
+                blacklistPageInflater.init();
+            }catch (Exception e){
+                e.printStackTrace();
+            }
+            try {
+                settingsPageInflater = new SettingsPageInflater(getApplicationContext(), layouts.get(pageIDs.Settings.getID()));
+                settingsPageInflater.init();
+            }catch (Exception e){
+                e.printStackTrace();
+            }
+            try {
+                aboutPageInflater = new AboutPageInflater(getApplicationContext(), layouts.get(pageIDs.About.getID()), guiDialog);
+                aboutPageInflater.init();
+            }catch (Exception e){
+                e.printStackTrace();
             }
         });
         viewPager.setAdapter(layoutPagerAdapter);
@@ -175,21 +171,18 @@ public class ProxyService extends Service {
                 onViewPager_select(position);
             }
         });
-        txvNum.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                try {
-                    if(viewPager.getCurrentItem() + 1 != layoutPagerAdapter.getCount()
-                            && !pageBackwards || viewPager.getCurrentItem() - 1 == -1) {
-                        pageBackwards = false;
-                        viewPager.setCurrentItem(viewPager.getCurrentItem() + 1, true);
-                    }else{
-                        pageBackwards = true;
-                        viewPager.setCurrentItem(viewPager.getCurrentItem() - 1, true);
-                    }
-                }catch (Exception e1){
-                    e1.printStackTrace();
+        txvNum.setOnClickListener(view -> {
+            try {
+                if(viewPager.getCurrentItem() + 1 != layoutPagerAdapter.getCount()
+                        && !pageBackwards || viewPager.getCurrentItem() - 1 == -1) {
+                    pageBackwards = false;
+                    viewPager.setCurrentItem(viewPager.getCurrentItem() + 1, true);
+                }else{
+                    pageBackwards = true;
+                    viewPager.setCurrentItem(viewPager.getCurrentItem() - 1, true);
                 }
+            }catch (Exception e1){
+                e1.printStackTrace();
             }
         });
     }
@@ -200,7 +193,7 @@ public class ProxyService extends Service {
     private void showSplash(final ISplash iSplash){
         try {
             settings = new SettingsPageInflater(getApplicationContext(), null).getSettings();
-            if (Integer.valueOf(settings.get(4)) == 1) {
+            if (Integer.parseInt(settings.get(4)) == 1) {
                 iSplash.onShow();
             } else {
                 try {
@@ -215,21 +208,12 @@ public class ProxyService extends Service {
                     final int delay1 = 800, delay2 = 1200;
                     for (int s = 0; s < loadDots.toCharArray().length; s++) {
                         final int i = s;
-                        new Handler().postDelayed(new Runnable() {
-                            @Override
-                            public void run() {
-                                txvK3Load.setText("[" + txvK3Load.getText().toString().replace("[", "").replace("]", "") +
-                                        String.valueOf(loadDots.toCharArray()[i]) + "]");
-                                if (i == loadDots.toCharArray().length - 1) {
-                                    new Handler().postDelayed(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            iSplash.onShow();
-                                        }
-                                    }, delay2);
-                                }
+                        new Handler().postDelayed(() -> {
+                            txvK3Load.setText(String.format("[%s%s]", txvK3Load.getText().toString().replace("[", "").replace("]", ""), loadDots.toCharArray()[i]));
+                            if (i == loadDots.toCharArray().length - 1) {
+                                new Handler().postDelayed(iSplash::onShow, delay2);
                             }
-                        }, s * delay1);
+                        }, (long) s * delay1);
                     }
                     splashDialog.show();
                 } catch (Exception e) {
@@ -245,73 +229,70 @@ public class ProxyService extends Service {
     @SuppressWarnings("deprecation")
     private void showGUI(){
         try {
-            showSplash(new ISplash() {
-                @Override
-                public void onShow() {
-                    LayoutInflater inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-                    guiDialog = new Dialog(getApplicationContext(), android.R.style.Theme_Black);
-                    guiDialog.getWindow().requestFeature(Window.FEATURE_NO_TITLE);
-                    guiDialog.getWindow().setType(new RequestDialog().getWindowType());
-                    guiDialog.setContentView(inflater.inflate(R.layout.layout_main, null));
-                    initGUI(guiDialog);
-                    mainHandler = new Handler(getApplicationContext().getMainLooper());
-                    if(splashDialog != null && splashDialog.isShowing()) {
-                        splashDialog.cancel();
-                    }
-                    guiDialog.show();
-                    settings = new SettingsPageInflater(getApplicationContext(), null).getSettings();
-                    new LProxy(getApplicationContext(), Integer.parseInt(settings.get(0)),
-                            Integer.parseInt(settings.get(1)), Integer.parseInt(settings.get(2)),
-                            Integer.parseInt(settings.get(3)))
-                            .start(new LProxy.IProxyStatus() {
-                                @Override
-                                public void onReceive(HttpRequest httpRequest, String blacklist) {
-                                    httpReqs.add(new HTTPReq(httpRequest.getUri(),
-                                            httpRequest.getMethod().name(),
-                                            httpRequest.getProtocolVersion().text(),
-                                            httpRequest.getDecoderResult(),
-                                            getTime(), new FilteredResponse(Integer.parseInt(settings.get(2))).isBlacklisted(httpRequest.getUri(),
-                                            blacklist.split("[" + SqliteDBHelper.SPLIT_CHAR + "]"))));
-                                    final ArrayList<HTTPReq> tmpHttpReqs = new ArrayList<>(httpReqs);
-                                    Collections.reverse(tmpHttpReqs);
-                                    Runnable setAdapterRunnable = new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            try {
-                                                mRecyclerView.setAdapter(new RequestAdapter(getApplicationContext(), tmpHttpReqs, new RequestAdapter.OnItemClickListener() {
-                                                    @Override
-                                                    public void onItemClick(HTTPReq item, int i) {
-                                                        mainPageInflater.onDetailDialogItemClick(item, blacklistPageInflater, viewPager, pageIDs.BlackList.getID());
-                                                    }
-                                                }));
-                                                if(txvMainPageMsg != null && txvMainPageMsg.getVisibility() == View.VISIBLE)
-                                                    txvMainPageMsg.setVisibility(View.GONE);
-                                            } catch (Exception e) {
-                                                e.printStackTrace();
-                                            }
-                                        }
-                                    };
-                                    mainHandler.post(setAdapterRunnable);
-                                }
-
-                                @Override
-                                public void onNotify(NotificationHandler notificationHandler1, HttpProxyServer httpProxyServer1) {
-                                    notificationHandler = notificationHandler1;
-                                    httpProxyServer = httpProxyServer1;
-                                }
-
-                                @Override
-                                public void onError(Exception e) {
-                                    Log.d(getString(R.string.app_name), e.toString());
-                                }
-
-                                private String getTime() {
-                                    DateFormat df = new SimpleDateFormat("{HH:mm:ss}", Locale.getDefault());
-                                    return df.format(Calendar.getInstance().getTime());
-                                }
-                            });
-
+            showSplash(() -> {
+                LayoutInflater inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+                guiDialog = new Dialog(getApplicationContext(), android.R.style.Theme_Black);
+                guiDialog.getWindow().requestFeature(Window.FEATURE_NO_TITLE);
+                guiDialog.getWindow().setType(new RequestDialog().getWindowType());
+                guiDialog.setContentView(inflater.inflate(R.layout.layout_main, null));
+                initGUI(guiDialog);
+                mainHandler = new Handler(getApplicationContext().getMainLooper());
+                if(splashDialog != null && splashDialog.isShowing()) {
+                    splashDialog.cancel();
                 }
+                guiDialog.show();
+                settings = new SettingsPageInflater(getApplicationContext(), null).getSettings();
+                new LProxy(getApplicationContext(), Integer.parseInt(settings.get(0)),
+                        Integer.parseInt(settings.get(1)), Integer.parseInt(settings.get(2)),
+                        Integer.parseInt(settings.get(3)))
+                        .start(new LProxy.IProxyStatus() {
+                            @Override
+                            public void onReceive(HttpRequest httpRequest, String blacklist) {
+                                httpReqs.add(new HTTPReq(httpRequest.getUri(),
+                                        httpRequest.getMethod().name(),
+                                        httpRequest.getProtocolVersion().text(),
+                                        httpRequest.getDecoderResult(),
+                                        getTime(), new FilteredResponse(Integer.parseInt(settings.get(2))).isBlacklisted(httpRequest.getUri(),
+                                        blacklist.split("[" + SqliteDBHelper.SPLIT_CHAR + "]"))));
+                                final ArrayList<HTTPReq> tmpHttpReqs = new ArrayList<>(httpReqs);
+                                Collections.reverse(tmpHttpReqs);
+                                Runnable setAdapterRunnable = () -> {
+                                    try {
+                                        mRecyclerView.setAdapter(
+                                                new RequestAdapter(getApplicationContext(),
+                                                        tmpHttpReqs,
+                                                        (item, i) ->
+                                                                mainPageInflater
+                                                                        .onDetailDialogItemClick(
+                                                                        item,
+                                                                        blacklistPageInflater
+                                                                        )));
+                                        if(txvMainPageMsg != null && txvMainPageMsg.getVisibility() == View.VISIBLE)
+                                            txvMainPageMsg.setVisibility(View.GONE);
+                                    } catch (Exception e) {
+                                        e.printStackTrace();
+                                    }
+                                };
+                                mainHandler.post(setAdapterRunnable);
+                            }
+
+                            @Override
+                            public void onNotify(NotificationHandler notificationHandler1, HttpProxyServer httpProxyServer1) {
+                                notificationHandler = notificationHandler1;
+                                httpProxyServer = httpProxyServer1;
+                            }
+
+                            @Override
+                            public void onError(Exception e) {
+                                Log.d(getString(R.string.app_name), e.toString());
+                            }
+
+                            private String getTime() {
+                                DateFormat df = new SimpleDateFormat("{HH:mm:ss}", Locale.getDefault());
+                                return df.format(Calendar.getInstance().getTime());
+                            }
+                        });
+
             });
         }catch (Exception e){
             e.printStackTrace();

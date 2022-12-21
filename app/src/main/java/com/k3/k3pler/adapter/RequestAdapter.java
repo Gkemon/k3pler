@@ -1,14 +1,15 @@
 package com.k3.k3pler.adapter;
 
 import android.content.Context;
-import android.support.annotation.NonNull;
-import android.support.v4.content.ContextCompat;
-import android.support.v7.widget.RecyclerView;
 import android.text.Html;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+
+import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.k3.k3pler.R;
 import com.k3.k3pler.sub.HTTPReq;
@@ -19,28 +20,22 @@ import io.netty.handler.codec.DecoderResult;
 
 /** Adapter for recyclerView list [main page]  **/
 public class RequestAdapter extends RecyclerView.Adapter<RequestAdapter.ViewHolder> {
-    private Context context;
+    private final Context context;
     public ArrayList<HTTPReq> requests;
-    private int requestColor;
 
     public interface OnItemClickListener {
         void onItemClick(HTTPReq item, int i);
     }
-    private OnItemClickListener onItemClickListener;
+    private final OnItemClickListener onItemClickListener;
 
-    public class ViewHolder extends RecyclerView.ViewHolder {
+    public static class ViewHolder extends RecyclerView.ViewHolder {
         private TextView txvRequest;
         public ViewHolder(View view) {
             super(view);
             txvRequest = view.findViewById(R.id.txvRequest);
         }
         public void bind(final HTTPReq item, final int i, final OnItemClickListener listener) {
-            itemView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    listener.onItemClick(item, i);
-                }
-            });
+            itemView.setOnClickListener(v -> listener.onItemClick(item, i));
         }
     }
     public RequestAdapter(Context context, ArrayList<HTTPReq> requests, OnItemClickListener onItemClickListener) {
@@ -57,6 +52,7 @@ public class RequestAdapter extends RecyclerView.Adapter<RequestAdapter.ViewHold
     @Override
     @SuppressWarnings("deprecation")
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
+        int requestColor;
         if (requests.get(position).getBlocked())
             requestColor = ContextCompat.getColor(context, android.R.color.holo_red_dark);
         else

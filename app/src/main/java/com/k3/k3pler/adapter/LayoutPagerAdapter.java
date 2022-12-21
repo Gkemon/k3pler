@@ -1,17 +1,19 @@
 package com.k3.k3pler.adapter;
 
 import android.content.Context;
-import android.support.annotation.NonNull;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+
+import androidx.annotation.NonNull;
+import androidx.viewpager.widget.PagerAdapter;
 
 import com.k3.k3pler.R;
 
 import java.util.ArrayList;
 
 /** Layout inflater class for viewPager layouts **/
-public class LayoutPagerAdapter extends android.support.v4.view.PagerAdapter {
+public class LayoutPagerAdapter extends PagerAdapter {
     public enum PagerEnum {
         MainPage(R.string.main_page, R.layout.layout_pager_main),
         BlackListPage(R.string.blacklist_page, R.layout.layout_pager_blacklist),
@@ -35,7 +37,7 @@ public class LayoutPagerAdapter extends android.support.v4.view.PagerAdapter {
     public interface IViewPager{
         void onViewsAdded(ArrayList<ViewGroup> layouts);
     }
-    private IViewPager iViewPager;
+    private final IViewPager iViewPager;
 
     public LayoutPagerAdapter(Context context, IViewPager iViewPager) {
         this.context = context;
